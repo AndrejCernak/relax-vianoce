@@ -161,7 +161,9 @@ svg { display: block; }
 .hero__badge svg { width: 13px; height: 13px; flex: none; animation: twinkle-soft 2.4s ease-in-out infinite; }
 .hero__badge-text { animation: fade-in .5s both; }
 
-.hero h1 { margin-top: 22px; font-size: clamp(3rem, 9.4vw, 5.7rem); line-height: .98; max-width: 10.5ch; text-wrap: balance; }
+.hero h1 { margin-top: 22px; font-size: clamp(2.8rem, 8.6vw, 5.3rem); line-height: .98; max-width: 11ch; text-wrap: balance; }
+.hero h1 .hero__star { width: .5em; vertical-align: .35em; margin-left: .04em; color: var(--gold-light); }
+.hero__star svg { width: 100%; height: auto; filter: drop-shadow(0 0 .18em rgba(236, 215, 164, .7)); animation: twinkle-soft 2.6s ease-in-out 1.4s infinite; }
 .hero h1 .w { display: inline-block; animation: word-in 1s var(--ease-out) both; animation-delay: calc(150ms + var(--i) * 75ms); }
 .hero h1 em .w { padding-right: .08em; margin-right: -.08em; }
 .hero h1 .foil { animation: word-in 1s var(--ease-out) both, foil-shift 7s linear 1.5s infinite; animation-delay: calc(150ms + var(--i) * 75ms), 1.5s; }

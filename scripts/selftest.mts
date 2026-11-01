@@ -50,7 +50,7 @@ console.log("✓ Kód poukážky:", a);
 const pdf = await renderVouchersPdf([
   {
     code: a,
-    productName: "Vianočný rituál",
+    productName: "Vianočná krása",
     includes: [
       "Kolagénové ošetrenie pleti SYIS",
       "Relaxačná masáž tváre, krku a dekoltu",

@@ -88,11 +88,13 @@ export default function Home() {
             <div className="hero__text">
               <Countdown />
               <h1>
-                <Words text="Darujte jej" from={0} />{" "}
+                <Words text="Vianočný darček, ktorý" from={0} />{" "}
                 <em>
-                  <Words text="dve hodiny" from={2} foil />
+                  <Words text={"neskončí v skrini"} from={3} foil />
                 </em>{" "}
-                <Words text="len pre seba" from={4} />
+                <span className="w hero__star" style={vars({ "--i": 5 })}>
+                  <Star />
+                </span>
               </h1>
               <p className="hero__lead">
                 Vianočné poukážky do salónu Relax Žilina. Vyberiete online, zaplatíte kartou a poukážka v PDF vám hneď príde do e-mailu.

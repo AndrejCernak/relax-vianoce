@@ -29,7 +29,7 @@ export const products: Product[] = [
   {
     id: "vianocny-ritual",
     group: "pre-nu",
-    name: "Vianočný rituál",
+    name: "Vianočná krása",
     priceCents: 8900,
     includes: [
       "Kolagénové ošetrenie pleti SYIS",
@@ -43,7 +43,7 @@ export const products: Product[] = [
   {
     id: "maly-ritual",
     group: "pre-nu",
-    name: "Malý rituál",
+    name: "Vianočná krása mini",
     priceCents: 4500,
     includes: ["Luxusné hĺbkové čistenie pleti ultrazvukom s úpravou a farbením obočia", "Farbenie mihalníc"],
     duration: "približne 1 h 30 min",
@@ -67,7 +67,7 @@ export const products: Product[] = [
   {
     id: "luxusny-ritual",
     group: "pre-nu",
-    name: "Luxusný rituál",
+    name: "Vianočná krása premium",
     priceCents: 13900,
     includes: [
       "Neinvazívny facelifting rádiofrekvenciou s úpravou a farbením obočia",
