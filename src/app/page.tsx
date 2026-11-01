@@ -73,9 +73,9 @@ export default function Home() {
             <Star />
             Relax Žilina
           </span>
-          <a className="topbar__phone" href={salon.phoneHref}>
+          <a className="topbar__phone" href={salon.phoneHref} aria-label={`Zavolať do salónu ${salon.phone}`}>
             <PhoneIcon />
-            {salon.phone}
+            <span className="topbar__num">{salon.phone}</span>
           </a>
         </div>
       </header>
@@ -83,15 +83,20 @@ export default function Home() {
       <main>
         <section className="hero">
           <div className="hero__glow" aria-hidden="true" />
+          <div className="hero__bokeh" aria-hidden="true">
+            {Array.from({ length: 7 }, (_, i) => (
+              <span key={i} />
+            ))}
+          </div>
           <Snowfall className="hero__snow" />
           <div className="wrap hero__in">
             <div className="hero__text">
               <Countdown />
               <h1>
-                <Words text="Vianočný darček, ktorý" from={0} />{" "}
-                <em>
-                  <Words text={"neskončí v skrini"} from={3} foil />
-                </em>{" "}
+                <span className="hero__script">
+                  <Words text="Vianočný darček," from={0} foil />
+                </span>{" "}
+                <Words text={"ktorý neskončí v skrini"} from={2} />{" "}
                 <span className="w hero__star" style={vars({ "--i": 5 })}>
                   <Star />
                 </span>

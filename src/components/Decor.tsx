@@ -134,12 +134,22 @@ const swagBranches: { tip: [number, number]; base: [number, number]; size: numbe
   { tip: [104, 12], base: [76, 6], size: 0.85 },
 ];
 
-function needles(len: number, size: number) {
+// Deterministický „náhodný“ rozptyl (rovnaký na serveri aj v prehliadači), aby ihličie nevyzeralo ako vzor.
+const jitter = (n: number) => {
+  const s = Math.sin(n * 12.9898) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+function needles(len: number, size: number, seed: number) {
   let d = "";
-  for (let x = 0.5; x < len; x += 1.2) {
-    const l = (2.2 + (x / len) * 3) * size;
-    const px = x.toFixed(2);
-    d += `M${px} 0l${(-l * 0.5).toFixed(2)} ${(-l).toFixed(2)}M${px} 0l${(-l * 0.5).toFixed(2)} ${l.toFixed(2)}`;
+  let i = 0;
+  for (let x = 0.4; x < len; x += 0.75 + jitter(seed + i) * 0.7, i++) {
+    for (const side of [-1, 1]) {
+      const r = jitter(seed * 7.31 + i * 3.17 + side);
+      const l = (2 + (x / len) * 3.2) * size * (0.7 + r * 0.55);
+      const a = ((40 + r * 30) * Math.PI) / 180;
+      d += `M${x.toFixed(2)} 0l${(-Math.cos(a) * l).toFixed(2)} ${(side * Math.sin(a) * l).toFixed(2)}`;
+    }
   }
   return d;
 }
@@ -156,9 +166,9 @@ export function Swag({ className }: P) {
         return (
           <g key={i} transform={`translate(${tip[0]} ${tip[1]}) rotate(${angle.toFixed(2)})`} fill="none" strokeLinecap="round">
             <path d={`M0 0H${len.toFixed(2)}`} stroke="#4a3226" strokeWidth=".8" />
-            <path d={needles(len, size)} stroke={i % 2 ? "#24493a" : "#2f5a48"} strokeWidth=".9" />
-            <path d={needles(len, size * 0.75)} stroke="#4f8a6c" strokeWidth=".5" />
-            <path d={needles(len, size * 0.45)} stroke="#8fbfa3" strokeWidth=".3" opacity=".7" />
+            <path d={needles(len, size, i + 1)} stroke={i % 2 ? "#1f4033" : "#24493a"} strokeWidth=".85" />
+            <path d={needles(len, size * 0.85, i + 11)} stroke="#3a6b54" strokeWidth=".6" />
+            <path d={needles(len, size * 0.55, i + 21)} stroke="#7fb294" strokeWidth=".32" opacity=".75" />
           </g>
         );
       })}

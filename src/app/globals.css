@@ -137,7 +137,7 @@ svg { display: block; }
 /* ---------- Úvod ---------- */
 .hero {
   position: relative; isolation: isolate; overflow: hidden; color: var(--snow);
-  padding: 104px 0 110px;
+  padding: 58px 0 100px;
   background:
     radial-gradient(900px 520px at 78% 38%, rgba(201, 161, 94, .16), transparent 62%),
     radial-gradient(760px 520px at 0% 0%, rgba(163, 56, 90, .5), transparent 70%),
@@ -150,28 +150,63 @@ svg { display: block; }
 }
 .snow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .hero__snow { z-index: 3; }
-.hero__in { position: relative; z-index: 2; display: grid; gap: 40px; align-items: center; }
-
-.hero__badge {
-  display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px 8px 13px; border-radius: 999px;
-  background: rgba(255, 250, 243, .07); border: 1px solid rgba(236, 215, 164, .32); color: var(--gold-light);
-  font-size: 14px; font-weight: 500; letter-spacing: .01em;
-  animation: fade-up .7s var(--ease-out) .1s both;
+/* Rozmazané svetielka v pozadí (ako svetlá stromčeka mimo zaostrenia) */
+.hero__bokeh { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.hero__bokeh span {
+  position: absolute; left: var(--x); top: var(--y); width: var(--s); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, var(--c) 0%, transparent 68%);
+  animation: bokeh var(--t) ease-in-out var(--dl) infinite alternate;
 }
-.hero__badge svg { width: 13px; height: 13px; flex: none; animation: twinkle-soft 2.4s ease-in-out infinite; }
-.hero__badge-text { animation: fade-in .5s both; }
+.hero__bokeh span:nth-child(1) { --x: 2%; --y: 9%; --s: 110px; --c: rgba(255, 206, 140, .4); --t: 6s; --dl: 0s; }
+.hero__bokeh span:nth-child(2) { --x: 80%; --y: 3%; --s: 140px; --c: rgba(255, 160, 185, .3); --t: 8s; --dl: 1s; }
+.hero__bokeh span:nth-child(3) { --x: 58%; --y: 30%; --s: 60px; --c: rgba(255, 220, 160, .45); --t: 5s; --dl: .5s; }
+.hero__bokeh span:nth-child(4) { --x: 12%; --y: 44%; --s: 80px; --c: rgba(255, 170, 120, .3); --t: 7s; --dl: 2s; }
+.hero__bokeh span:nth-child(5) { --x: 86%; --y: 52%; --s: 96px; --c: rgba(255, 214, 150, .35); --t: 6.5s; --dl: 1.5s; }
+.hero__bokeh span:nth-child(6) { --x: 36%; --y: 12%; --s: 44px; --c: rgba(255, 240, 210, .5); --t: 4.5s; --dl: .8s; }
+.hero__bokeh span:nth-child(7) { --x: 46%; --y: 76%; --s: 120px; --c: rgba(220, 110, 150, .28); --t: 9s; --dl: 3s; }
 
-.hero h1 { margin-top: 22px; font-size: clamp(2.8rem, 8.6vw, 5.3rem); line-height: .98; max-width: 11ch; text-wrap: balance; }
-.hero h1 .hero__star { width: .5em; vertical-align: .35em; margin-left: .04em; color: var(--gold-light); }
+.hero__in { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 6px; }
+.hero__in > .scene { order: -1; width: min(94%, 440px); }
+.hero__text { display: flex; flex-direction: column; align-items: flex-start; }
+
+/* Odpočet ako list z adventného kalendára */
+.hero__count { display: flex; align-items: center; gap: 14px; color: var(--gold-light); animation: fade-up .8s var(--ease-out) .1s both; }
+.hero__count-num {
+  display: grid; place-items: center; min-width: 1.05em;
+  font-family: var(--display); font-style: italic; font-weight: 500; font-size: 2.8rem; line-height: .85;
+  animation: pop .6s var(--ease-spring) both;
+}
+.hero__count-num svg { width: .5em; height: .5em; animation: twinkle-soft 2.4s ease-in-out infinite; }
+.hero__count-label {
+  padding-left: 14px; border-left: 1px solid rgba(236, 215, 164, .4);
+  font-size: 11px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; line-height: 1.55; color: rgba(255, 250, 243, .8);
+}
+
+/* Nadpis: krasopisný začiatok + pätkové písmo */
+.hero h1 { margin-top: 16px; font-size: clamp(2.6rem, 11vw, 5rem); line-height: 1; text-wrap: balance; }
+.hero__script { display: block; margin-left: -.04em; font-family: var(--script); font-weight: 400; font-size: 1.1em; line-height: 1.2; letter-spacing: 0; word-spacing: .08em; }
+.hero__script .w { padding: 0 .16em .08em .06em; margin: 0 -.16em -.08em -.06em; }
+.hero h1 .hero__star { width: .5em; vertical-align: .3em; margin-left: .06em; color: var(--gold-light); }
 .hero__star svg { width: 100%; height: auto; filter: drop-shadow(0 0 .18em rgba(236, 215, 164, .7)); animation: twinkle-soft 2.6s ease-in-out 1.4s infinite; }
 .hero h1 .w { display: inline-block; animation: word-in 1s var(--ease-out) both; animation-delay: calc(150ms + var(--i) * 75ms); }
-.hero h1 em .w { padding-right: .08em; margin-right: -.08em; }
 .hero h1 .foil { animation: word-in 1s var(--ease-out) both, foil-shift 7s linear 1.5s infinite; animation-delay: calc(150ms + var(--i) * 75ms), 1.5s; }
 .hero__lead { margin-top: 24px; font-size: 1.14rem; color: rgba(255, 250, 243, .8); max-width: 44ch; animation: fade-up .9s var(--ease-out) .65s both; }
 .hero__actions { display: flex; gap: 26px; align-items: center; margin-top: 30px; flex-wrap: wrap; animation: fade-up .9s var(--ease-out) .8s both; }
 .hero .linklike { color: var(--snow); }
 .hero__rating { margin-top: 24px; font-size: 14.5px; color: rgba(255, 250, 243, .68); animation: fade-up .9s var(--ease-out) .95s both; }
 .hero__rating span { color: var(--gold-light); letter-spacing: 3px; margin-right: 4px; }
+
+/* Mobil: ilustrácia hore, tlačidlo na celú šírku hneď pod nadpisom */
+@media (max-width: 859px) {
+  .topbar__phone { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  .topbar__phone svg { width: 18px; height: 18px; }
+  .topbar__num { display: none; }
+  .hero__actions { order: 1; align-self: stretch; margin-top: 24px; }
+  .hero__actions .btn { flex: 1 1 100%; min-height: 56px; font-size: 17px; }
+  .hero__actions .linklike { display: none; }
+  .hero__lead { order: 2; margin-top: 18px; font-size: 15.5px; }
+  .hero__rating { order: 3; margin-top: 14px; font-size: 13.5px; }
+}
 .hero__drift { position: absolute; left: 0; right: 0; bottom: -1px; z-index: 4; width: 100%; height: 70px; color: var(--cream); }
 
 /* ---------- Scéna: čečina, ozdoby, darček, poukážka (rozmery v cqw = % šírky scény) ---------- */
@@ -600,6 +635,7 @@ svg { display: block; }
 @keyframes shine { to { transform: translateX(520%) skewX(-20deg); } }
 @keyframes sheen { 0%, 22% { transform: translateX(0) skewX(-18deg); } 40%, 100% { transform: translateX(620%) skewX(-18deg); } }
 @keyframes sheen-card { to { background-position: -50% 0; } }
+@keyframes bokeh { from { opacity: .35; transform: scale(.85); } to { opacity: 1; transform: scale(1.1); } }
 @keyframes glow { from { opacity: .6; transform: scale(.94); } to { opacity: 1; transform: scale(1.06); } }
 @keyframes twinkle { 0%, 100% { opacity: .15; transform: scale(.45) rotate(0); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
 @keyframes twinkle-soft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.8) rotate(20deg); } }
@@ -637,7 +673,8 @@ svg { display: block; }
 
 @media (min-width: 860px) {
   .hero { padding: 132px 0 150px; }
-  .hero__in { grid-template-columns: 1.08fr 1fr; gap: 48px; }
+  .hero__in { display: grid; grid-template-columns: 1.08fr 1fr; gap: 48px; align-items: center; }
+  .hero__in > .scene { order: 0; width: min(100%, 520px); }
   .hero__drift { height: 110px; }
   .steps { padding: 88px 0 32px; }
   .steps__list { grid-template-columns: repeat(3, 1fr); gap: 28px; }
@@ -658,7 +695,6 @@ svg { display: block; }
 
 @media (max-width: 520px) {
   .lights { --odd: none; height: 58px; }
-  .topbar__phone { padding: 7px 12px; font-size: 13.5px; }
   .seal { width: 92px; height: 92px; top: -24px; right: -8px; }
   .voucher__body { padding: 30px 24px 22px; }
   .voucher__stub { padding: 18px 24px 26px; }
