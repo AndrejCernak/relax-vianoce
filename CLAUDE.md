@@ -32,6 +32,15 @@ Preto musí byť **každý predaj presne zmeraný** (Stripe + kód VIANOCE v sal
 - Ceny v `src/lib/products.ts` = súčet služieb z cenníka na Visblee, zaokrúhlené nadol, **bez komunikovanej zľavy**.
 - „Nový rok, nové telo“ sa zobrazí automaticky od 27. 12. (`availableFrom`).
 
+## Black Friday 2026
+- Podstránka `/black-friday`: `src/app/black-friday/page.tsx`, `black-friday.css`, klient `src/components/BlackFridayShop.tsx`.
+  Tieto tri súbory sú **rovnaké v Relaxe aj v Paradise**, rozdiely sú len v `config.ts` (`blackFriday`) a `products.ts`.
+- Produkty majú `group: "black-friday"`, `availableFrom/Until` (23. – 29. 11.), `compareAtCents`, `tier`, `sessions`, `landingPath`.
+  `isAvailable` kontroluje začiatok aj koniec; `SALE_PREVIEW=1` ho obíde (len lokálne).
+- Fulfillment podľa `isDeal(product)` mení nadpis PDF, predmet e-mailu, platnosť (`blackFriday.validUntil`) a oslovenie.
+- Nákupná lišta je `position: fixed` dole; cookie lišta zapisuje svoju výšku do `--consent-h`, aby sa neprekrývali.
+- **Overiť s Petou:** leták Relaxu uvádza EMShape a INFRAShape (rovnako ako Paradise), no vianočný cenník Relaxu má EMSzero.
+
 ## Stav
 Hotové a overené (v cloude): build, typecheck, Pixel len po súhlase, rovnaké eventId v Pixeli a v tele `/api/checkout`,
 CAPI payload (hashovanie e-mailu, telefónu, mena), PDF poukážka s diakritikou, chybová hláška bez Stripe kľúča.

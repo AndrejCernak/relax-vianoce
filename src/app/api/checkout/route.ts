@@ -1,6 +1,6 @@
 import { NextResponse, after } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { getProduct, isAvailable } from "@/lib/products";
+import { checkoutName, getProduct, isAvailable } from "@/lib/products";
 import { siteUrl } from "@/lib/config";
 import { sendCapi, capiAllowed, buildFbc } from "@/lib/meta-capi";
 
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
           currency: "eur",
           unit_amount: product.priceCents,
           product_data: {
-            name: `Darčeková poukážka: ${product.name}`,
+            name: checkoutName(product),
             description: product.includes.join(" + ").slice(0, 500),
           },
         },
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       },
     },
     success_url: `${siteUrl}/dakujeme?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteUrl}/#darceky`,
+    cancel_url: `${siteUrl}${product.landingPath ?? "/#darceky"}`,
     metadata: {
       product_id: product.id,
       consent: consent ? "1" : "0",

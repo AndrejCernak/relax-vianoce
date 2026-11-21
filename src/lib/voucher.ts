@@ -29,6 +29,8 @@ export type VoucherInfo = {
   recipient?: string;
   validUntil: string;
   bonus?: string;
+  /** Nadpis nad názvom (predvolene „Darčeková poukážka“) */
+  label?: string;
 };
 
 const C = {
@@ -85,7 +87,7 @@ export async function renderVouchersPdf(vouchers: VoucherInfo[]): Promise<Uint8A
 
     // Ľavá časť
     page.drawText(salon.fullName, { x: m, y: H - m - 4, size: 10, font: sansBold, color: C.wine });
-    page.drawText("Darčeková poukážka", { x: m, y: H - m - 22, size: 10, font: sans, color: C.muted });
+    page.drawText(v.label ?? "Darčeková poukážka", { x: m, y: H - m - 22, size: 10, font: sans, color: C.muted });
 
     const titleLines = wrap(v.productName, stubX - m * 2, (s) => serif.widthOfTextAtSize(s, 28));
     let y = H - m - 70;

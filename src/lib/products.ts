@@ -1,7 +1,7 @@
 // Katalóg darčekov. Ceny sú v centoch a vychádzajú z cenníka na Visblee (november 2026).
 // Cena balíka = súčet služieb zaokrúhlený nadol, bez komunikovanej zľavy.
 
-export type Group = "pre-nu" | "pre-seba" | "pre-neho" | "hodnotova" | "novy-rok";
+export type Group = "pre-nu" | "pre-seba" | "pre-neho" | "hodnotova" | "novy-rok" | "black-friday";
 
 export type Product = {
   id: string;
@@ -15,6 +15,16 @@ export type Product = {
   featured?: boolean;
   /** ISO dátum, od ktorého sa produkt zobrazí a dá kúpiť (čas Europe/Bratislava) */
   availableFrom?: string;
+  /** ISO dátum, do ktorého (vrátane) sa produkt dá kúpiť */
+  availableUntil?: string;
+  /** Pôvodná cena pred zľavou (prečiarknutá) */
+  compareAtCents?: number;
+  /** Úroveň balíka pri akciách (BASIC, PREMIUM, VIP) */
+  tier?: string;
+  /** Počet procedúr v balíku (kvôli cene za procedúru) */
+  sessions?: number;
+  /** Stránka, kam sa zákazník vráti, keď platbu zruší */
+  landingPath?: string;
 };
 
 export const groups: { id: Group; title: string; intro: string }[] = [
@@ -111,11 +121,68 @@ export const products: Product[] = [
   },
 ];
 
+/** Black Friday 2026: predaj od pondelka 23. 11. do nedele 29. 11. (vrátane). */
+export const blackFridayWindow = { from: "2026-11-23", until: "2026-11-29" };
+
+const bf = {
+  group: "black-friday",
+  availableFrom: blackFridayWindow.from,
+  availableUntil: blackFridayWindow.until,
+  landingPath: "/black-friday",
+} as const;
+
+products.push(
+  {
+    ...bf,
+    id: "bf-body-shape-basic",
+    tier: "BASIC",
+    name: "Body Shape BASIC",
+    priceCents: 5500,
+    compareAtCents: 7500,
+    sessions: 3,
+    includes: ["1× EMShape 40 min", "1× INFRAShape 30 min", "1× lymfodrenáž 30 min"],
+  },
+  {
+    ...bf,
+    id: "bf-body-shape-premium",
+    tier: "PREMIUM",
+    name: "Body Shape PREMIUM",
+    priceCents: 17900,
+    compareAtCents: 30000,
+    sessions: 15,
+    includes: ["5× EMShape 40 min", "5× INFRAShape 30 min", "5× lymfodrenáž 30 min"],
+  },
+  {
+    ...bf,
+    id: "bf-body-shape-vip",
+    tier: "VIP",
+    name: "Body Shape VIP",
+    priceCents: 29000,
+    compareAtCents: 58000,
+    sessions: 30,
+    includes: ["10× EMShape 40 min", "10× INFRAShape 30 min", "10× lymfodrenáž 30 min"],
+  },
+);
+
 export const valueVoucherIds = ["hodnotova-20", "hodnotova-50", "hodnotova-100"];
 
+/** Začiatok (0:00) a koniec (23:59:59) obdobia predaja v ms, čas Europe/Bratislava (v zime +01:00). */
+export function saleWindowMs(from: string, until: string) {
+  return { start: Date.parse(`${from}T00:00:00+01:00`), end: Date.parse(`${until}T23:59:59+01:00`) };
+}
+
 export function isAvailable(p: Product, now = new Date()): boolean {
-  if (!p.availableFrom) return true;
-  return now.getTime() >= Date.parse(`${p.availableFrom}T00:00:00+01:00`);
+  // SALE_PREVIEW=1 sprístupní akcie mimo termínu. Len na lokálne testovanie, nikdy nie vo Verceli.
+  if (process.env.SALE_PREVIEW === "1") return true;
+  const { start, end } = saleWindowMs(p.availableFrom ?? "2000-01-01", p.availableUntil ?? "2100-01-01");
+  return now.getTime() >= start && now.getTime() <= end;
+}
+
+export const isDeal = (p?: Product) => p?.group === "black-friday";
+
+/** Názov položky v Stripe Checkoute (zobrazí sa aj na potvrdení o platbe). */
+export function checkoutName(p: Product) {
+  return isDeal(p) ? `Black Friday: ${p.name}` : `Darčeková poukážka: ${p.name}`;
 }
 
 export function getProduct(id: string): Product | undefined {

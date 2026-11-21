@@ -9,9 +9,11 @@ type Props = {
   priceCents: number;
   label: string;
   variant?: "light" | "dark";
+  /** Ďalšia trieda na tlačidlo (napr. Black Friday lišta) */
+  className?: string;
 };
 
-export default function BuyButton({ productId, productName, priceCents, label, variant = "light" }: Props) {
+export default function BuyButton({ productId, productName, priceCents, label, variant = "light", className = "" }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +43,7 @@ export default function BuyButton({ productId, productName, priceCents, label, v
 
   return (
     <div className="buy">
-      <button className={`btn btn--buy ${variant === "dark" ? "btn--on-wine" : ""}`} onClick={buy} disabled={busy} aria-busy={busy}>
+      <button className={`btn btn--buy ${variant === "dark" ? "btn--on-wine" : ""} ${className}`} onClick={buy} disabled={busy} aria-busy={busy}>
         {busy ? "Otváram platbu…" : label}
       </button>
       {error && (
