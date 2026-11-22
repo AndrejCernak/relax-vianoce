@@ -92,7 +92,7 @@ export async function fulfillCheckout(sessionId: string) {
   if (customer?.email) {
     await sendEmail({
       to: [{ email: customer.email, name: customer.name ?? undefined }],
-      subject: qty > 1 ? `Vaše poukážky (${qty} ks): ${productName} – ${salon.name}` : `Vaša ${label.toLowerCase()} – ${salon.name}`,
+      subject: qty > 1 ? `Vaše poukážky (${qty} ks): ${productName} – ${salon.name}` : `Vaša ${deal ? label : "darčeková poukážka"} – ${salon.name}`,
       replyTo: process.env.SALON_NOTIFY_EMAIL || undefined,
       attachments: [{ name: fileName, content: pdf }],
       html: `

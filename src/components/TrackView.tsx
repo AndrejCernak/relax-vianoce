@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type HTMLAttributes, type ReactNode } from "react";
-import { newEventId, trackPixel } from "@/lib/tracking-client";
+import { CONSENT_EVENT, newEventId, trackPixel } from "@/lib/tracking-client";
 
 /** Odošle ViewContent, keď je darček aspoň z 60 % viditeľný (raz za načítanie stránky). */
 export default function TrackView({
@@ -24,20 +24,31 @@ export default function TrackView({
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
     let sent = false;
+    let visible = false;
+    const send = () => {
+      if (sent || !visible) return;
+      sent = trackPixel(
+        "ViewContent",
+        { currency: "EUR", value: priceCents / 100, content_ids: [productId], content_name: productName, content_type: "product" },
+        newEventId(),
+      );
+      if (sent) io.disconnect();
+    };
     const io = new IntersectionObserver(
       (entries) => {
-        if (sent || !entries.some((e) => e.isIntersecting)) return;
-        sent = trackPixel(
-          "ViewContent",
-          { currency: "EUR", value: priceCents / 100, content_ids: [productId], content_name: productName, content_type: "product" },
-          newEventId(),
-        );
-        if (sent) io.disconnect();
+        visible = entries[entries.length - 1].isIntersecting;
+        send();
       },
       { threshold: 0.6 },
     );
     io.observe(el);
-    return () => io.disconnect();
+    // Súhlas môže prísť, až keď je darček už na obrazovke. Odklad, aby MetaPixel stihol pripraviť fbq.
+    const onConsent = () => window.setTimeout(send, 0);
+    window.addEventListener(CONSENT_EVENT, onConsent);
+    return () => {
+      io.disconnect();
+      window.removeEventListener(CONSENT_EVENT, onConsent);
+    };
   }, [productId, productName, priceCents]);
 
   return (

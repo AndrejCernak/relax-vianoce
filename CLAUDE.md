@@ -18,7 +18,7 @@ Preto musí byť **každý predaj presne zmeraný** (Stripe + kód VIANOCE v sal
 - Stripe Checkout (hostovaný), webhook `/api/stripe-webhook`
 - Meta Pixel (až po súhlase s cookies) + Conversions API zo servera
 - PDF poukážky cez `pdf-lib` + DejaVu fonty v `assets/fonts` (kvôli diakritike)
-- E-maily cez Brevo API, voliteľne n8n webhook → NocoDB
+- E-maily cez n8n webhook (`N8N_MAIL_WEBHOOK_URL`, workflow `n8n/poukazky-email.json`, Send Email cez SMTP), náhradne Brevo API; voliteľne n8n webhook → NocoDB
 - Hosting: plán je Vercel, subdoména napr. `darceky.relax-zilina.sk`
 - Fonty stránky cez `@fontsource-variable` (self-hosted, bez Google Fonts kvôli GDPR)
 
@@ -45,7 +45,7 @@ Preto musí byť **každý predaj presne zmeraný** (Stripe + kód VIANOCE v sal
 Hotové a overené (v cloude): build, typecheck, Pixel len po súhlase, rovnaké eventId v Pixeli a v tele `/api/checkout`,
 CAPI payload (hashovanie e-mailu, telefónu, mena), PDF poukážka s diakritikou, chybová hláška bez Stripe kľúča.
 
-**Neoverené** (chýbajú kľúče): reálna Stripe platba, webhook, doručenie udalostí do Events Managera, Brevo e-maily.
+**Neoverené** (chýbajú kľúče): reálna Stripe platba, webhook, Conversions API zo servera, e-maily cez n8n.
 
 ## TODO
 1. Spustiť lokálne: `npm install`, `cp .env.example .env.local`, `npm run dev`.

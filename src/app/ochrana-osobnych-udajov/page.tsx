@@ -27,7 +27,7 @@ export default function Privacy() {
         <h2>Komu údaje odovzdávame</h2>
         <ul>
           <li>Stripe Payments Europe (platby)</li>
-          <li>Brevo (odosielanie e-mailov s poukážkou)</li>
+          <li>WebPoint cez n8n a poskytovateľa e-mailovej schránky (odosielanie e-mailov s poukážkou)</li>
           <li>Meta Platforms Ireland (meranie reklamy, len so súhlasom)</li>
           <li>Vercel (hosting stránky)</li>
           <li>WebPoint (správa reklamy a stránky, sprostredkovateľ)</li>

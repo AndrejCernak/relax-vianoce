@@ -12,7 +12,7 @@ takže v Ads Manageri vidíte reálne tržby a návratnosť reklamy.
 4. Po zaplatení Stripe zavolá webhook → server:
    - pošle `Purchase` cez Conversions API (event_id `purchase_<id platby>`, suma, zahashovaný e-mail, telefón, meno, `fbp`, `fbc`),
    - vygeneruje PDF poukážku s jedinečným kódom (`RLX-XXXX-XXXX`, jeden kód na kus),
-   - pošle e-mail zákazníkovi a upozornenie salónu (Brevo),
+   - pošle e-mail zákazníkovi a upozornenie salónu (cez n8n, náhradne Brevo),
    - voliteľne pošle predaj do n8n (→ NocoDB).
 5. Ďakovacia stránka pošle `Purchase` z Pixelu s rovnakým event_id → Meta obe udalosti spojí do jednej.
 
@@ -26,7 +26,7 @@ Webhook je odolný voči opakovaniu: kódy sú odvodené od ID platby a po sprac
 | Webhook endpoint | Stripe → Developers → Webhooks | `STRIPE_WEBHOOK_SECRET` |
 | Pixel ID (ten istý pixel, ktorý beží na Visblee) | Events Manager | `NEXT_PUBLIC_META_PIXEL_ID` |
 | Conversions API token | Events Manager → pixel → Nastavenia → Conversions API → Vygenerovať prístupový token | `META_CAPI_ACCESS_TOKEN` |
-| Brevo API kľúč + overený odosielateľ (doména relax-zilina.sk) | Brevo → SMTP & API | `BREVO_API_KEY`, `EMAIL_FROM` |
+| n8n workflow `n8n/poukazky-email.json` + SMTP schránka | n8n | `N8N_MAIL_WEBHOOK_URL`, `N8N_MAIL_SECRET`, `EMAIL_FROM` |
 | E-mail salónu na upozornenia | Peta | `SALON_NOTIFY_EMAIL` |
 | Náhodný tajný kľúč pre kódy | napr. `openssl rand -hex 32` | `VOUCHER_SECRET` |
 | Subdoména | DNS relax-zilina.sk | — |
@@ -98,6 +98,23 @@ Samostatná podstránka **`/black-friday`** (reklamu smerujte priamo sem). Použ
 - Lokálne sa dá akcia otvoriť aj mimo termínu cez `SALE_PREVIEW=1` v `.env.local`. **Nikdy to nedávajte do Vercelu.**
 - Prečiarknuté ceny: pri oznámení zľavy musí byť ako pôvodná uvedená najnižšia cena za posledných 30 dní (pravidlá Omnibus).
   Overte, že 75 / 300 / 580 € tomu zodpovedá.
+
+## E-maily s poukážkou cez n8n
+
+Po zaplatení stránka pošle **hotový e-mail** (adresát, predmet, HTML a PDF poukážka v base64) na n8n webhook
+a n8n ho odošle cez **Send Email** (SMTP). Pri každom predaji prídu dva e-maily: zákazníkovi a salónu.
+Jeden workflow stačí pre Relax aj Paradise, meno odosielateľa posiela stránka (`EMAIL_FROM_NAME`).
+
+1. n8n → Import from File → `n8n/poukazky-email.json`.
+2. Uzol **Webhook** → Authentication: Header Auth → nová credential: Name `X-Webhook-Secret`,
+   Value = dlhý náhodný reťazec (napr. `openssl rand -hex 32`). Rovnaký reťazec dajte do Vercelu ako `N8N_MAIL_SECRET`.
+3. Uzol **Send Email** → SMTP credential schránky, z ktorej sa bude posielať (napr. `poukazky@webpointsk.com`
+   u vášho hostingu, alebo Gmail s heslom pre aplikácie). Tú istú adresu dajte do `EMAIL_FROM`.
+4. Workflow aktivujte a **Production URL** webhooku dajte do Vercelu ako `N8N_MAIL_WEBHOOK_URL`. Potom Redeploy.
+
+Payload, ktorý n8n dostane:
+`{ from, fromName, to, subject, html, replyTo, attachment: { filename, base64 } }`.
+Ak n8n vráti chybu, webhook Stripe vráti 500 a Stripe doručenie zopakuje.
 
 ## Lokálny vývoj
 

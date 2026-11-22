@@ -1,0 +1,117 @@
+{
+  "name": "Poukážky – odoslanie e-mailu",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "poukazky-email",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e55674c3-d1a4-4317-99aa-aeab69157a4e",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "7934043c-c031-4e2d-879f-6a3b3b9768b0"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "body.attachment.base64",
+        "binaryPropertyName": "attachment",
+        "options": {
+          "fileName": "={{ $json.body.attachment.filename }}",
+          "mimeType": "application/pdf"
+        }
+      },
+      "id": "d9d82577-34bb-49c7-92d5-59e260c95fba",
+      "name": "PDF z base64",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $('Webhook').item.json.body.fromName }} <{{ $('Webhook').item.json.body.from }}>",
+        "toEmail": "={{ $('Webhook').item.json.body.to }}",
+        "subject": "={{ $('Webhook').item.json.body.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $('Webhook').item.json.body.html }}",
+        "options": {
+          "attachments": "attachment",
+          "replyTo": "={{ $('Webhook').item.json.body.replyTo }}"
+        }
+      },
+      "id": "fd656a09-b23c-4d71-9b84-2af099bac15d",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true }",
+        "options": {}
+      },
+      "id": "9568892a-0320-4938-a9f0-b4907ab9fe7c",
+      "name": "Odpoveď",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "PDF z base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF z base64": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Odpoveď",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
