@@ -13,6 +13,9 @@ export type BfTier = {
   compareAtCents: number;
   sessions: number;
   includes: string[];
+  /** Obmedzený počet kusov a koľko z nich ešte zostáva (len pri balíkoch s limitom) */
+  stock?: number;
+  remaining?: number;
 };
 
 export type BfPhase = "soon" | "live" | "over";
@@ -31,10 +34,19 @@ type Props = {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const procedures = (n: number) => `${n} ${n === 1 ? "procedúra" : n <= 4 ? "procedúry" : "procedúr"}`;
+const soldOut = (t: BfTier) => t.remaining === 0;
+
+/** „Zostáva 7 z 10 kusov“ pri obmedzených balíkoch. */
+function stockLabel(left: number, total: number) {
+  if (left === 1) return `Zostáva posledný kus z ${total}`;
+  if (left <= 4) return `Zostávajú ${left} z ${total} kusov`;
+  return `Zostáva ${left} z ${total} kusov`;
+}
+
 const percentOff = (t: BfTier) => Math.round((1 - t.priceCents / t.compareAtCents) * 100);
 
 /** Plynulé „pretočenie“ čísla na novú hodnotu (cena v lište po zmene balíka). */
-function useRolling(value: number, ms = 450) {
+export function useRolling(value: number, ms = 450) {
   const [shown, setShown] = useState(value);
   const current = useRef(value);
   useEffect(() => {
@@ -91,12 +103,12 @@ export default function BlackFridayShop({ tiers, defaultId, startsAt, endsAt, in
     [left === null ? null : left % 60, "sek"],
   ];
 
-  const sel = tiers.find((t) => t.id === selectedId) ?? tiers[0];
+  const sel = tiers.find((t) => t.id === selectedId && !soldOut(t)) ?? tiers.find((t) => !soldOut(t)) ?? tiers[0];
   const price = useRolling(Math.round(sel.priceCents / 100));
   const save = useRolling(Math.round((sel.compareAtCents - sel.priceCents) / 100));
 
   const choose = (id: string) => {
-    if (id === selectedId) return;
+    if (id === selectedId || tiers.some((t) => t.id === id && soldOut(t))) return;
     setSelectedId(id);
     setBurst((b) => b + 1);
     if ("vibrate" in navigator) navigator.vibrate(8);
@@ -140,13 +152,14 @@ export default function BlackFridayShop({ tiers, defaultId, startsAt, endsAt, in
               {tiers.map((t) => {
                 const on = t.id === sel.id;
                 return (
-                  <label key={t.id} className={`bf-tier${on ? " is-on" : ""}`}>
+                  <label key={t.id} className={`bf-tier${on ? " is-on" : ""}${soldOut(t) ? " is-soldout" : ""}`}>
                     <input
                       className="sr-only"
                       type="radio"
                       name="bf-tier"
                       value={t.id}
                       checked={on}
+                      disabled={soldOut(t)}
                       onChange={() => choose(t.id)}
                       aria-label={`${t.tier}, ${procedures(t.sessions)}, ${formatEur(t.priceCents)} namiesto ${formatEur(t.compareAtCents)}`}
                     />
@@ -173,6 +186,11 @@ export default function BlackFridayShop({ tiers, defaultId, startsAt, endsAt, in
                     <span className="bf-tier__sub">
                       {procedures(t.sessions)} · {formatEur(Math.round(t.priceCents / t.sessions))} za procedúru
                     </span>
+                    {t.stock !== undefined && t.remaining !== undefined && (
+                      <span className={`bf-tier__stock${soldOut(t) ? " is-out" : ""}`}>
+                        {soldOut(t) ? "Vypredané" : stockLabel(t.remaining, t.stock)}
+                      </span>
+                    )}
                     <span className="bf-tier__off">−{percentOff(t)} %</span>
                     <span className="bf-tier__more">
                       <span>

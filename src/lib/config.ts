@@ -1,9 +1,9 @@
-// Údaje o salóne. Riadky označené DOPLNIŤ treba pred spustením skontrolovať s Petou.
+// Údaje o salóne (fakturačné údaje od klienta 22. 11. 2026). Riadky označené DOPLNIŤ treba skontrolovať s Petou.
 export const salon = {
   name: "Relax Žilina",
   fullName: "Relax Žilina – Charlie centrum",
-  // Visblee uvádza „J. M. Geromettu 8772“, interne evidujeme „1A“. DOPLNIŤ: overiť presnú adresu.
-  address: "J. M. Geromettu 1A, 010 01 Žilina",
+  // Fakturačné údaje uvádzajú „H.M.Gerometta 8772/1A“, ulica v Žiline je J. M. Geromettu (aj podľa Visblee).
+  address: "J. M. Geromettu 8772/1A, 010 01 Žilina",
   phone: "+421 911 111 641",
   phoneHref: "tel:+421911111641",
   hours: "Pondelok až sobota 9:00 – 19:00",
@@ -11,13 +11,14 @@ export const salon = {
   instagram: "https://www.instagram.com/relaxzilina/",
   facebook: "https://www.facebook.com/relaxzilina/",
   rating: { score: "4,9", count: 282 },
-  // DOPLNIŤ: prevádzkovateľ (obchodné meno, sídlo, IČO, DIČ / IČ DPH, e-mail)
+  // Prevádzkovateľ a predávajúci (rovnaká firma prevádzkuje aj Paradise Martin)
   operator: {
-    company: "DOPLNIŤ obchodné meno",
-    seat: "DOPLNIŤ sídlo",
-    ico: "DOPLNIŤ",
-    dic: "DOPLNIŤ",
-    email: "DOPLNIŤ e-mail",
+    company: "PEDORE s.r.o., registrovaný sociálny podnik",
+    seat: "1. mája 144/31, 038 51 Turčianska Štiavnička",
+    ico: "45284971",
+    dic: "2022922737",
+    icDph: "SK2022922737",
+    email: "zilinarelax@gmail.com",
   },
 };
 

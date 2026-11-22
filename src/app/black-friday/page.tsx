@@ -6,6 +6,7 @@ import { ConsentSettingsLink } from "@/components/ConsentBanner";
 import { PhoneIcon, Star } from "@/components/Decor";
 import { blackFridayWindow, formatEur, isDeal, products, saleWindowMs } from "@/lib/products";
 import { blackFriday as bf, salon } from "@/lib/config";
+import { soldUnits } from "@/lib/stock";
 
 // Stav akcie (pred / počas / po) sa dopočíta aj v prehliadači, toto je len čerstvosť prvého zobrazenia.
 export const revalidate = 60;
@@ -18,6 +19,8 @@ const tiers: BfTier[] = products.filter(isDeal).map((p) => ({
   compareAtCents: p.compareAtCents ?? p.priceCents,
   sessions: p.sessions ?? 1,
   includes: p.includes,
+  stock: p.stock,
+  remaining: p.stock,
 }));
 const maxSave = Math.max(...tiers.map((t) => t.compareAtCents - t.priceCents));
 const maxPct = Math.max(...tiers.map((t) => Math.round((1 - t.priceCents / t.compareAtCents) * 100)));
@@ -35,12 +38,26 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: bf.themeColor, width: "device-width", initialScale: 1, viewportFit: "cover" };
 
-export default function BlackFridayPage() {
+/** Doplní zostávajúce kusy obmedzených balíkov zo Stripe (bez Stripe kľúča ostane plný počet). */
+async function withStock(list: BfTier[]): Promise<BfTier[]> {
+  const limited = list.filter((t) => t.stock);
+  if (!limited.length || !process.env.STRIPE_SECRET_KEY) return list;
+  try {
+    const sold = await soldUnits(limited.map((t) => t.id), blackFridayWindow.from);
+    return list.map((t) => (t.stock ? { ...t, remaining: Math.max(0, t.stock - (sold[t.id] ?? 0)) } : t));
+  } catch (err) {
+    console.error("[black-friday] počet predaných kusov sa nepodarilo zistiť", err);
+    return list;
+  }
+}
+
+export default async function BlackFridayPage() {
+  const shown = await withStock(tiers);
   const { start, end } = saleWindowMs(blackFridayWindow.from, blackFridayWindow.until);
   const now = Date.now();
   const preview = process.env.SALE_PREVIEW === "1";
   const initialPhase: BfPhase = preview ? "live" : now < start ? "soon" : now > end ? "over" : "live";
-  const defaultId = tiers.find((t) => t.tier === "PREMIUM")?.id ?? tiers[0].id;
+  const defaultId = (shown.find((t) => t.tier === "PREMIUM" && t.remaining !== 0) ?? shown.find((t) => t.remaining !== 0) ?? shown[0]).id;
 
   const faqs = [
     { q: "Dokedy môžem procedúry vyčerpať?", a: `Poukážka platí do ${bf.validUntil}.` },
@@ -88,7 +105,7 @@ export default function BlackFridayPage() {
         </section>
 
         <BlackFridayShop
-          tiers={tiers}
+          tiers={shown}
           defaultId={defaultId}
           startsAt={start}
           endsAt={end}

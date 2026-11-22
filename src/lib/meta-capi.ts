@@ -123,7 +123,12 @@ export async function sendCapi(e: CapiEvent): Promise<void> {
   }
 }
 
+/**
+ * Smie server poslať udalosť a identifikátory (IP, prehliadač, fbclid) do Mety?
+ * Predvolene áno aj bez súhlasu s cookies (rozhodnutie klienta kvôli presnosti dát, právny základ oprávnený záujem).
+ * CAPI_REQUIRE_CONSENT=true vráti prísny režim: bez súhlasu sa do Mety nepošle nič.
+ */
 export function capiAllowed(consent: boolean) {
-  const requireConsent = (process.env.CAPI_REQUIRE_CONSENT ?? "true") !== "false";
+  const requireConsent = process.env.CAPI_REQUIRE_CONSENT === "true";
   return consent || !requireConsent;
 }

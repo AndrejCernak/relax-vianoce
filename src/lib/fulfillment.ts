@@ -56,10 +56,11 @@ export async function fulfillCheckout(sessionId: string) {
         city: customer?.address?.city,
         zip: customer?.address?.postal_code,
         country: customer?.address?.country ?? "sk",
-        ip: consent ? md.ip || undefined : undefined,
-        userAgent: consent ? md.ua || undefined : undefined,
-        fbp: consent ? md.fbp || undefined : undefined,
-        fbc: consent ? buildFbc(md.fbc || undefined, md.fbclid || undefined) : undefined,
+        // Metadáta platby obsahujú len to, čo checkout smel uložiť (pozri capiAllowed).
+        ip: md.ip || undefined,
+        userAgent: md.ua || undefined,
+        fbp: md.fbp || undefined,
+        fbc: buildFbc(md.fbc || undefined, md.fbclid || undefined),
       },
       custom: {
         currency: "EUR",

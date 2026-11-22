@@ -25,6 +25,8 @@ export type Product = {
   sessions?: number;
   /** Stránka, kam sa zákazník vráti, keď platbu zruší */
   landingPath?: string;
+  /** Počet kusov na predaj (bez hodnoty = neobmedzene); predané sa rátajú zo Stripe, pozri lib/stock.ts */
+  stock?: number;
 };
 
 export const groups: { id: Group; title: string; intro: string }[] = [
@@ -146,6 +148,7 @@ products.push(
     ...bf,
     id: "bf-body-shape-premium",
     tier: "PREMIUM",
+    stock: 10,
     name: "Body Shape PREMIUM",
     priceCents: 17900,
     compareAtCents: 30000,
@@ -156,6 +159,7 @@ products.push(
     ...bf,
     id: "bf-body-shape-vip",
     tier: "VIP",
+    stock: 10,
     name: "Body Shape VIP",
     priceCents: 29000,
     compareAtCents: 58000,

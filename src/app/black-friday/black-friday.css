@@ -29,6 +29,7 @@
   --bf-badge-text: #fff;
   --bf-price: var(--bf-gold);
   --bf-save-text: #f0cf7a;
+  --bf-stock-text: #ff8fa0;
   --bf-cta: linear-gradient(100deg, #b8862f 0%, #f7e2a1 30%, #d4a649 50%, #fff3cc 64%, #c4923a 82%, #ecc976 100%);
   --bf-cta-text: #1a1206;
   --bf-bar: rgba(14, 12, 9, .94);
@@ -65,6 +66,7 @@
   --bf-badge-text: #fff;
   --bf-price: linear-gradient(90deg, #0b3fb3, #1e6bff);
   --bf-save-text: #e11d48;
+  --bf-stock-text: #be123c;
   --bf-cta: linear-gradient(100deg, #ffbf0f 0%, #ffe066 40%, #ffc727 62%, #ffd84d 100%);
   --bf-cta-text: #0b1f4d;
   --bf-bar: rgba(255, 255, 255, .97);
@@ -239,6 +241,15 @@ body:has(.bf--blue) { background: #061a52; }
 }
 .bf-tier.is-on .bf-tier__off { animation: bf-pop .5s var(--ease-spring) .1s both; }
 
+.bf-tier__stock {
+  grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: 7px; margin-top: 6px;
+  padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 800; color: var(--bf-stock-text);
+  background: color-mix(in srgb, var(--bf-badge) 16%, transparent);
+}
+.bf-tier__stock::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--bf-badge); animation: bf-pulse 1.6s ease-in-out infinite; }
+.bf-tier__stock.is-out::before { animation: none; opacity: .5; }
+.bf-tier.is-soldout { cursor: not-allowed; opacity: .5; }
+.bf-tier.is-soldout:active { transform: none; }
 .bf-tier__more { grid-column: 1 / -1; display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease-out); }
 .bf-tier__more > span { overflow: hidden; }
 .bf-tier.is-on .bf-tier__more { grid-template-rows: 1fr; }
@@ -353,6 +364,7 @@ body:has(.bf--blue) .consent a { color: #1449c2; }
 @keyframes bf-select { 0% { transform: scale(.96); } 55% { transform: scale(1.02); } 100% { transform: scale(1); } }
 @keyframes bf-burst { to { transform: rotate(calc(var(--i) * 36deg)) translateX(30px) scale(.3); opacity: 0; } }
 @keyframes bf-bar-in { from { transform: translateY(110%); } }
+@keyframes bf-pulse { 50% { opacity: .35; transform: scale(.7); } }
 
 /* ---------- Väčšie obrazovky ---------- */
 @media (min-width: 900px) {
@@ -362,7 +374,7 @@ body:has(.bf--blue) .consent a { color: #1449c2; }
   .bf-tiers { grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
   .bf-tier { grid-template-columns: 1fr; align-content: start; padding: 20px 20px 22px 58px; }
   .bf-tier__prices { justify-self: start; order: 2; margin-top: 4px; }
-  .bf-tier__sub { order: 3; }
+  .bf-tier__sub, .bf-tier__stock { order: 3; }
   .bf-tier__more { order: 4; }
   .bf-tier__prices strong { font-size: 2.1rem; }
   .bf-tier .bf-tier__more { grid-template-rows: 1fr; }

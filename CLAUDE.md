@@ -25,8 +25,8 @@ Preto musí byť **každý predaj presne zmeraný** (Stripe + kód VIANOCE v sal
 ## Dôležité rozhodnutia (nemeniť bez dôvodu)
 - **Deduplikácia:** InitiateCheckout má rovnaké `eventId` v Pixeli (BuyButton) aj v CAPI (`/api/checkout`).
   Purchase má `event_id = purchase_<stripe session id>` v CAPI (webhook) aj v Pixeli (ďakovacia stránka).
-- **Consent:** Pixel sa načíta až po „Povoliť všetky“. `CAPI_REQUIRE_CONSENT=true` → bez súhlasu sa do Mety neposiela nič.
-- `fbp`, `fbc`, `fbclid`, IP a user agent sa ukladajú do metadát Stripe session (len so súhlasom) a použijú sa pri Purchase.
+- **Consent:** Pixel a cookies Mety (_fbp, _fbc) až po „Povoliť všetky“. Conversions API (InitiateCheckout, Purchase) ide **aj bez súhlasu** s IP, prehliadačom, fbclid a zahashovaným e-mailom/telefónom (rozhodnutie klienta 22. 11. 2026, oprávnený záujem, opísané v GDPR stránke). `CAPI_REQUIRE_CONSENT=true` vráti prísny režim.
+- IP, user agent a `fbclid` sa ukladajú do metadát Stripe session podľa `capiAllowed`, `fbp`/`fbc` len so súhlasom; použijú sa pri Purchase.
 - **Kódy poukážok** `RLX-XXXX-XXXX` sú deterministické (HMAC zo session id + poradie) → opakovaný webhook nevytvorí nové kódy.
   Po spracovaní sa na PaymentIntent zapíše `fulfilled=1` a `voucher_codes`.
 - Ceny v `src/lib/products.ts` = súčet služieb z cenníka na Visblee, zaokrúhlené nadol, **bez komunikovanej zľavy**.
@@ -38,6 +38,9 @@ Preto musí byť **každý predaj presne zmeraný** (Stripe + kód VIANOCE v sal
 - Produkty majú `group: "black-friday"`, `availableFrom/Until` (23. – 29. 11.), `compareAtCents`, `tier`, `sessions`, `landingPath`.
   `isAvailable` kontroluje začiatok aj koniec; `SALE_PREVIEW=1` ho obíde (len lokálne).
 - Fulfillment podľa `isDeal(product)` mení nadpis PDF, predmet e-mailu, platnosť (`blackFriday.validUntil`) a oslovenie.
+- **Limit kusov:** PREMIUM a VIP majú `stock: 10` (reálny limit od klienta 22. 11. 2026). Predané kusy sa rátajú zo zaplatených
+  Stripe Checkout sessions od začiatku akcie (`src/lib/stock.ts`). Stránka ukazuje „Zostáva X z 10 kusov“ (obnova každých 60 s),
+  `/api/checkout` vypredaný balík odmietne (409) a počet kusov v Stripe obmedzí na zvyšok. Pri výpadku Stripe sa limit nekontroluje.
 - Nákupná lišta je `position: fixed` dole; cookie lišta zapisuje svoju výšku do `--consent-h`, aby sa neprekrývali.
 - **Overiť s Petou:** leták Relaxu uvádza EMShape a INFRAShape (rovnako ako Paradise), no vianočný cenník Relaxu má EMSzero.
 
@@ -49,8 +52,8 @@ CAPI payload (hashovanie e-mailu, telefónu, mena), PDF poukážka s diakritikou
 
 ## TODO
 1. Spustiť lokálne: `npm install`, `cp .env.example .env.local`, `npm run dev`.
-2. Doplniť `src/lib/config.ts` (všetko s DOPLNIŤ): prevádzkovateľ, IČO, e-mail.
-   Adresa: Visblee uvádza „J. M. Geromettu 8772“, interne máme „1A“ – overiť.
+2. ~~Prevádzkovateľ~~ hotové: PEDORE s.r.o. (IČO 45284971, IČ DPH SK2022922737), e-mail zilinarelax@gmail.com,
+   adresa J. M. Geromettu 8772/1A (vo fakturačných údajoch je preklep „H.M.Gerometta“).
 3. Testovací nákup: Stripe test kľúč, `stripe listen --forward-to localhost:3000/api/stripe-webhook`, karta 4242 4242 4242 4242.
 4. Meta: Pixel ID (ten istý pixel ako na Visblee), CAPI token, `META_TEST_EVENT_CODE`, skontrolovať „Deduplikované“ a hodnotu Purchase.
 5. Nasadiť na Vercel, pripojiť subdoménu, ostrý webhook, overiť doménu v Business Manageri.

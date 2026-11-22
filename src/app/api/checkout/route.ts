@@ -1,4 +1,5 @@
 import { NextResponse, after } from "next/server";
+import { remainingUnits } from "@/lib/stock";
 import { stripe } from "@/lib/stripe";
 import { checkoutName, getProduct, isAvailable } from "@/lib/products";
 import { siteUrl } from "@/lib/config";
@@ -31,9 +32,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Tento darček momentálne nie je v predaji." }, { status: 400 });
   }
 
+  // Obmedzený balík: nepredáme viac kusov, než zostáva.
+  const remaining = await remainingUnits(product);
+  if (remaining === 0) {
+    return NextResponse.json({ error: "Tento balík je už vypredaný." }, { status: 409 });
+  }
+
   const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || undefined;
   const ua = req.headers.get("user-agent") ?? undefined;
   const consent = body.consent === true;
+  // IP, prehliadač a fbclid uložíme aj bez súhlasu, ak to CAPI_REQUIRE_CONSENT dovoľuje. Cookies Mety (_fbp, _fbc) len so súhlasom.
+  const share = capiAllowed(consent);
   const sourceUrl = body.sourceUrl?.startsWith(siteUrl) ? body.sourceUrl : siteUrl;
 
   let session;
@@ -44,7 +53,7 @@ export async function POST(req: Request) {
     line_items: [
       {
         quantity: 1,
-        adjustable_quantity: { enabled: true, minimum: 1, maximum: 20 },
+        adjustable_quantity: { enabled: true, minimum: 1, maximum: Math.min(20, remaining ?? 20) },
         price_data: {
           currency: "eur",
           unit_amount: product.priceCents,
@@ -77,9 +86,9 @@ export async function POST(req: Request) {
       consent: consent ? "1" : "0",
       fbp: consent ? clip(body.fbp) : "",
       fbc: consent ? clip(body.fbc) : "",
-      fbclid: consent ? clip(body.fbclid) : "",
-      ip: consent ? clip(ip) : "",
-      ua: consent ? clip(ua) : "",
+      fbclid: share ? clip(body.fbclid) : "",
+      ip: share ? clip(ip) : "",
+      ua: share ? clip(ua) : "",
       source_url: clip(sourceUrl),
     },
     payment_intent_data: {
@@ -93,7 +102,7 @@ export async function POST(req: Request) {
   }
 
   // Conversions API: InitiateCheckout s rovnakým event_id ako Pixel v prehliadači.
-  if (body.eventId && capiAllowed(consent)) {
+  if (body.eventId && share) {
     const eventId = body.eventId.slice(0, 100);
     after(() =>
       sendCapi({
@@ -101,10 +110,10 @@ export async function POST(req: Request) {
         eventId,
         sourceUrl,
         user: {
-          ip: consent ? ip : undefined,
-          userAgent: consent ? ua : undefined,
+          ip,
+          userAgent: ua,
           fbp: consent ? body.fbp : undefined,
-          fbc: consent ? buildFbc(body.fbc, body.fbclid) : undefined,
+          fbc: buildFbc(consent ? body.fbc : undefined, body.fbclid),
         },
         custom: {
           currency: "EUR",

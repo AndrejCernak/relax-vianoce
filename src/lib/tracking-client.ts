@@ -47,8 +47,9 @@ export function trackPixel(event: string, params: Record<string, unknown>, event
 /** Identifikátory, ktoré server pripojí k udalostiam Conversions API (zvyšuje kvalitu zhody). */
 export function collectMetaIds() {
   const consent = getConsent() === "granted";
-  if (!consent) return { consent: false };
+  // fbclid je v adrese z reklamy, nie v cookie. Či ho server použije aj bez súhlasu, rozhoduje CAPI_REQUIRE_CONSENT.
   const fbclid = new URLSearchParams(location.search).get("fbclid") || undefined;
+  if (!consent) return { consent: false, fbclid };
   return {
     consent: true,
     fbp: readCookie("_fbp"),
