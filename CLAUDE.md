@@ -18,7 +18,7 @@ Preto musí byť **každý predaj presne zmeraný** (Stripe + kód VIANOCE v sal
 - Stripe Checkout (hostovaný), webhook `/api/stripe-webhook`
 - Meta Pixel (až po súhlase s cookies) + Conversions API zo servera
 - PDF poukážky cez `pdf-lib` + DejaVu fonty v `assets/fonts` (kvôli diakritike)
-- E-maily cez n8n webhook (`N8N_MAIL_WEBHOOK_URL`, workflow `n8n/poukazky-email.json`, Send Email cez SMTP), náhradne Brevo API; voliteľne n8n webhook → NocoDB
+- E-maily cez n8n webhook (`N8N_MAIL_WEBHOOK_URL`, workflow `n8n/poukazky-email.json`, Send Email z webpointsk@gmail.com s menom salónu, webhook chráni len náhodná cesta), náhradne Brevo API; voliteľne n8n webhook → NocoDB
 - Hosting: plán je Vercel, subdoména napr. `darceky.relax-zilina.sk`
 - Fonty stránky cez `@fontsource-variable` (self-hosted, bez Google Fonts kvôli GDPR)
 

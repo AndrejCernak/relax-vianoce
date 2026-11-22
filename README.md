@@ -102,18 +102,18 @@ Samostatná podstránka **`/black-friday`** (reklamu smerujte priamo sem). Použ
 ## E-maily s poukážkou cez n8n
 
 Po zaplatení stránka pošle **hotový e-mail** (adresát, predmet, HTML a PDF poukážka v base64) na n8n webhook
-a n8n ho odošle cez **Send Email** (SMTP). Pri každom predaji prídu dva e-maily: zákazníkovi a salónu.
-Jeden workflow stačí pre Relax aj Paradise, meno odosielateľa posiela stránka (`EMAIL_FROM_NAME`).
+a n8n ho odošle cez **Send Email** z e-mailu WebPointu (`webpointsk@gmail.com`) s menom salónu
+(„Relax Žilina“ / „Paradise Martin“). Pri každom predaji prídu dva e-maily: zákazníkovi a salónu.
+Jeden workflow stačí pre oba salóny.
 
-1. n8n → Import from File → `n8n/poukazky-email.json`.
-2. Uzol **Webhook** → Authentication: Header Auth → nová credential: Name `X-Webhook-Secret`,
-   Value = dlhý náhodný reťazec (napr. `openssl rand -hex 32`). Rovnaký reťazec dajte do Vercelu ako `N8N_MAIL_SECRET`.
-3. Uzol **Send Email** → SMTP credential schránky, z ktorej sa bude posielať (napr. `poukazky@webpointsk.com`
-   u vášho hostingu, alebo Gmail s heslom pre aplikácie). Tú istú adresu dajte do `EMAIL_FROM`.
-4. Workflow aktivujte a **Production URL** webhooku dajte do Vercelu ako `N8N_MAIL_WEBHOOK_URL`. Potom Redeploy.
+1. n8n → Import from File → `n8n/poukazky-email.json`. V uzle **Webhook** prepíšte Path `ZMENTE-NA-NAHODNY-RETAZEC`
+   na náhodný reťazec (napr. výstup `uuidgen`). Repozitár je verejný, skutočná cesta do neho nepatrí.
+2. Uzol **Send Email** → SMTP credential Gmailu: `smtp.gmail.com`, port `465`, SSL zapnuté,
+   používateľ `webpointsk@gmail.com`, heslo = **heslo pre aplikácie** z Google účtu.
+3. **Publish** a **Production URL** z uzla Webhook dajte do Vercelu ako `N8N_MAIL_WEBHOOK_URL`. Potom Redeploy.
 
-Payload, ktorý n8n dostane:
-`{ from, fromName, to, subject, html, replyTo, attachment: { filename, base64 } }`.
+Webhook nemá heslo, chráni ho náhodná adresa (UUID v ceste), ktorú pozná len Vercel. Nikde ju nezverejňujte.
+Payload: `{ fromName, to, subject, html, replyTo, attachment: { filename, base64 } }`.
 Ak n8n vráti chybu, webhook Stripe vráti 500 a Stripe doručenie zopakuje.
 
 ## Lokálny vývoj

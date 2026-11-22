@@ -4,12 +4,11 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "poukazky-email",
-        "authentication": "headerAuth",
+        "path": "ZMENTE-NA-NAHODNY-RETAZEC",
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "e55674c3-d1a4-4317-99aa-aeab69157a4e",
+      "id": "5b2d2698-76d9-435e-a2c0-dfe72418b8d1",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -17,7 +16,7 @@
         0,
         0
       ],
-      "webhookId": "7934043c-c031-4e2d-879f-6a3b3b9768b0"
+      "webhookId": "2bf37c18-69c7-4bc4-bab8-fe6eede29705"
     },
     {
       "parameters": {
@@ -29,7 +28,7 @@
           "mimeType": "application/pdf"
         }
       },
-      "id": "d9d82577-34bb-49c7-92d5-59e260c95fba",
+      "id": "bc445ff9-c24b-4a63-91a4-df9e659da97c",
       "name": "PDF z base64",
       "type": "n8n-nodes-base.convertToFile",
       "typeVersion": 1.1,
@@ -40,7 +39,7 @@
     },
     {
       "parameters": {
-        "fromEmail": "={{ $('Webhook').item.json.body.fromName }} <{{ $('Webhook').item.json.body.from }}>",
+        "fromEmail": "={{ $('Webhook').item.json.body.fromName }} <webpointsk@gmail.com>",
         "toEmail": "={{ $('Webhook').item.json.body.to }}",
         "subject": "={{ $('Webhook').item.json.body.subject }}",
         "emailFormat": "html",
@@ -50,7 +49,7 @@
           "replyTo": "={{ $('Webhook').item.json.body.replyTo }}"
         }
       },
-      "id": "fd656a09-b23c-4d71-9b84-2af099bac15d",
+      "id": "ce54859c-167d-464b-9c19-d31420fe382b",
       "name": "Send Email",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -65,7 +64,7 @@
         "responseBody": "={ \"ok\": true }",
         "options": {}
       },
-      "id": "9568892a-0320-4938-a9f0-b4907ab9fe7c",
+      "id": "6e702d68-89d2-4406-a590-df06e883c67e",
       "name": "Odpoveď",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
