@@ -2,7 +2,7 @@ import { NextResponse, after } from "next/server";
 import { remainingUnits } from "@/lib/stock";
 import { stripe } from "@/lib/stripe";
 import { checkoutName, getProduct, isAvailable } from "@/lib/products";
-import { siteUrl } from "@/lib/config";
+import { appId, salon, siteUrl } from "@/lib/config";
 import { sendCapi, capiAllowed, buildFbc } from "@/lib/meta-capi";
 
 export const runtime = "nodejs";
@@ -58,7 +58,8 @@ export async function POST(req: Request) {
           currency: "eur",
           unit_amount: product.priceCents,
           product_data: {
-            name: checkoutName(product),
+            // Na platobnej stránke je meno firmy (PEDORE s.r.o.), preto pridáme názov salónu.
+            name: `${checkoutName(product)} – ${salon.name}`,
             description: product.includes.join(" + ").slice(0, 500),
           },
         },
@@ -82,6 +83,7 @@ export async function POST(req: Request) {
     success_url: `${siteUrl}/dakujeme?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteUrl}${product.landingPath ?? "/#darceky"}`,
     metadata: {
+      app: appId,
       product_id: product.id,
       consent: consent ? "1" : "0",
       fbp: consent ? clip(body.fbp) : "",

@@ -1,17 +1,19 @@
 import "server-only";
 import { stripe } from "./stripe";
 import { saleWindowMs } from "./products";
+import { appId } from "./config";
 
 /**
  * Koľko kusov sa z obmedzených balíkov už predalo (zaplatené Stripe Checkout platby od začiatku predaja).
  * Rátajú sa kusy, nie platby: jedna platba môže obsahovať viac poukážok.
+ * Len platby z tejto stránky (metadata.app), oba salóny majú rovnaké ID balíkov a môžu zdieľať Stripe účet.
  */
 export async function soldUnits(productIds: string[], since: string): Promise<Record<string, number>> {
   const counts: Record<string, number> = Object.fromEntries(productIds.map((id) => [id, 0]));
   const created = { gte: Math.floor(saleWindowMs(since, since).start / 1000) };
   for await (const s of stripe().checkout.sessions.list({ status: "complete", created, limit: 100, expand: ["data.line_items"] })) {
     const id = s.metadata?.product_id;
-    if (s.payment_status !== "paid" || !id || !(id in counts)) continue;
+    if (s.metadata?.app !== appId || s.payment_status !== "paid" || !id || !(id in counts)) continue;
     counts[id] += s.line_items?.data[0]?.quantity ?? 1;
   }
   return counts;

@@ -2,7 +2,7 @@ import "server-only";
 import type Stripe from "stripe";
 import { stripe } from "./stripe";
 import { getProduct, formatEur, isDeal } from "./products";
-import { blackFriday, salon, siteUrl, voucherValidUntil } from "./config";
+import { appId, blackFriday, salon, siteUrl, voucherValidUntil } from "./config";
 import { renderVouchersPdf, voucherCode, type VoucherInfo } from "./voucher";
 import { sendEmail, esc } from "./email";
 import { sendCapi, capiAllowed, buildFbc } from "./meta-capi";
@@ -18,6 +18,11 @@ export async function fulfillCheckout(sessionId: string) {
   const s = await stripe().checkout.sessions.retrieve(sessionId, {
     expand: ["line_items", "payment_intent"],
   });
+  // Ten istý Stripe účet (PEDORE s.r.o.) môže používať aj Paradise Martin s rovnakými ID balíkov. Cudzie platby preskočíme.
+  if (s.metadata?.app !== appId) {
+    console.log(`[fulfill] ${sessionId} nepatrí tejto stránke, preskakujem`);
+    return;
+  }
   if (s.payment_status !== "paid") {
     console.log(`[fulfill] ${sessionId} ešte nie je zaplatená (${s.payment_status})`);
     return;

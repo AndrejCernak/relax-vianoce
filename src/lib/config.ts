@@ -22,6 +22,9 @@ export const salon = {
   },
 };
 
+/** Označenie platieb z tejto stránky v metadátach Stripe (ten istý účet PEDORE s.r.o. môže používať aj Paradise Martin). */
+export const appId = "relax-darceky";
+
 export const siteUrl = (process.env.SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 export const voucherValidUntil = process.env.VOUCHER_VALID_UNTIL || "31. 3. 2027";
 export const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || "";
