@@ -25,8 +25,8 @@ export const salon = {
 /** Označenie platieb z tejto stránky v metadátach Stripe (ten istý účet PEDORE s.r.o. môže používať aj Paradise Martin). */
 export const appId = "relax-darceky";
 
-/** Sadzba DPH na faktúrach zo Stripe (ceny sú vrátane DPH). Potvrdiť s účtovníčkou, VAT_RATE na Verceli ju prepíše, 0 = bez DPH. */
-export const vatRate = Number(process.env.VAT_RATE ?? 23);
+/** Sadzba DPH na faktúrach zo Stripe (ceny sú vrátane DPH). PEDORE ako registrovaný sociálny podnik má 5 % (klient 24. 11. 2026). VAT_RATE na Verceli ju prepíše. */
+export const vatRate = Number(process.env.VAT_RATE ?? 5);
 
 export const siteUrl = (process.env.SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 export const voucherValidUntil = process.env.VOUCHER_VALID_UNTIL || "31. 3. 2027";
