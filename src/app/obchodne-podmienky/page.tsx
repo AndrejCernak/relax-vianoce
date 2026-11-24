@@ -20,7 +20,7 @@ export default function Terms() {
         <p>Predmetom je predaj darčekových poukážok na služby a produkty prevádzky {salon.fullName} prostredníctvom stránky {siteUrl}.</p>
 
         <h2>3. Cena a platba</h2>
-        <p>Ceny sú uvedené v eurách vrátane DPH. Platba prebieha vopred kartou, Apple Pay alebo Google Pay cez platobnú bránu Stripe.</p>
+        <p>Ceny sú uvedené v eurách vrátane DPH. Platba prebieha vopred kartou, Apple Pay alebo Google Pay cez platobnú bránu Stripe. Po zaplatení vám e-mailom príde poukážka a faktúra.</p>
 
         <h2>4. Doručenie</h2>
         <p>Poukážku v PDF zasielame na e-mail zadaný pri platbe bezodkladne po prijatí platby. Na požiadanie pripravíme tlačenú poukážku na vyzdvihnutie v prevádzke.</p>

@@ -38,6 +38,9 @@ Preto musí byť **každý predaj presne zmeraný** (Stripe + kód VIANOCE v sal
 - Produkty majú `group: "black-friday"`, `availableFrom/Until` (23. – 29. 11.), `compareAtCents`, `tier`, `sessions`, `landingPath`.
   `isAvailable` kontroluje začiatok aj koniec; `SALE_PREVIEW=1` ho obíde (len lokálne).
 - Fulfillment podľa `isDeal(product)` mení nadpis PDF, predmet e-mailu, platnosť (`blackFriday.validUntil`) a oslovenie.
+- **Faktúry:** Checkout má `invoice_creation`, Stripe po zaplatení vystaví faktúru (IČO, DIČ, IČ DPH, prevádzka, päta s firmou)
+  a pošle ju, ak je v Stripe zapnuté Customer emails → Successful payments. Odkaz je aj v e-maile s poukážkou.
+  DPH je zahrnutá v cene, sadzba `VAT_RATE` (predvolene 23 %, `src/lib/invoice.ts` si sadzbu v Stripe nájde alebo vytvorí). **Overiť s účtovníčkou.**
 - **Limit kusov:** PREMIUM a VIP majú `stock: 10` (reálny limit od klienta 22. 11. 2026). Predané kusy sa rátajú zo zaplatených
   Stripe Checkout sessions od začiatku akcie (`src/lib/stock.ts`). Stránka ukazuje „Zostáva X z 10 kusov“ (obnova každých 60 s),
   `/api/checkout` vypredaný balík odmietne (409) a počet kusov v Stripe obmedzí na zvyšok. Pri výpadku Stripe sa limit nekontroluje.

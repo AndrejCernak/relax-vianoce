@@ -1,5 +1,6 @@
 import { NextResponse, after } from "next/server";
 import { remainingUnits } from "@/lib/stock";
+import { invoiceCreation, vatTaxRateId } from "@/lib/invoice";
 import { stripe } from "@/lib/stripe";
 import { checkoutName, getProduct, isAvailable } from "@/lib/products";
 import { appId, salon, siteUrl } from "@/lib/config";
@@ -45,6 +46,9 @@ export async function POST(req: Request) {
   const share = capiAllowed(consent);
   const sourceUrl = body.sourceUrl?.startsWith(siteUrl) ? body.sourceUrl : siteUrl;
 
+  const taxRate = await vatTaxRateId();
+  const lineName = `${checkoutName(product)} – ${salon.name}`;
+
   let session;
   try {
     session = await stripe().checkout.sessions.create({
@@ -59,12 +63,15 @@ export async function POST(req: Request) {
           unit_amount: product.priceCents,
           product_data: {
             // Na platobnej stránke je meno firmy (PEDORE s.r.o.), preto pridáme názov salónu.
-            name: `${checkoutName(product)} – ${salon.name}`,
+            name: lineName,
             description: product.includes.join(" + ").slice(0, 500),
           },
         },
+        tax_rates: taxRate ? [taxRate] : undefined,
       },
     ],
+    // Po zaplatení Stripe vystaví faktúru a pošle ju zákazníkovi.
+    invoice_creation: invoiceCreation(product.id, lineName),
     phone_number_collection: { enabled: true },
     custom_fields: [
       {
@@ -77,7 +84,7 @@ export async function POST(req: Request) {
     ],
     custom_text: {
       submit: {
-        message: `Poukážku v PDF vám pošleme e-mailom hneď po zaplatení. Zaplatením súhlasíte s obchodnými podmienkami: ${siteUrl}/obchodne-podmienky`,
+        message: `Poukážku v PDF a faktúru vám pošleme e-mailom hneď po zaplatení. Zaplatením súhlasíte s obchodnými podmienkami: ${siteUrl}/obchodne-podmienky`,
       },
     },
     success_url: `${siteUrl}/dakujeme?session_id={CHECKOUT_SESSION_ID}`,
