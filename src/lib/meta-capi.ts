@@ -100,12 +100,13 @@ export function buildCapiPayload(e: CapiEvent) {
   return payload;
 }
 
-export async function sendCapi(e: CapiEvent): Promise<void> {
+/** Pošle udalosť do Mety. Vráti true, ak ju Meta prijala (chyby len zapíše do logu, nikdy nevyhodí). */
+export async function sendCapi(e: CapiEvent): Promise<boolean> {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const token = process.env.META_CAPI_ACCESS_TOKEN;
   if (!pixelId || !token) {
     console.warn("[capi] chýba NEXT_PUBLIC_META_PIXEL_ID alebo META_CAPI_ACCESS_TOKEN, udalosť sa neodoslala", e.eventName);
-    return;
+    return false;
   }
   const version = process.env.META_API_VERSION || "v23.0";
   const url = `https://graph.facebook.com/${version}/${pixelId}/events?access_token=${encodeURIComponent(token)}`;
@@ -116,10 +117,15 @@ export async function sendCapi(e: CapiEvent): Promise<void> {
       body: JSON.stringify(buildCapiPayload(e)),
     });
     const body = await res.text();
-    if (!res.ok) console.error(`[capi] ${e.eventName} zlyhala (${res.status}): ${body}`);
-    else console.log(`[capi] ${e.eventName} odoslaná (${e.eventId}): ${body}`);
+    if (!res.ok) {
+      console.error(`[capi] ${e.eventName} zlyhala (${res.status}): ${body}`);
+      return false;
+    }
+    console.log(`[capi] ${e.eventName} odoslaná (${e.eventId}): ${body}`);
+    return true;
   } catch (err) {
     console.error(`[capi] ${e.eventName} chyba siete`, err);
+    return false;
   }
 }
 

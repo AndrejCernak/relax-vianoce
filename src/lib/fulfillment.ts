@@ -28,12 +28,18 @@ export async function fulfillCheckout(sessionId: string) {
     return;
   }
   const pi = s.payment_intent as Stripe.PaymentIntent | null;
+  const md = s.metadata ?? {};
   if (pi?.metadata?.fulfilled === "1") {
-    console.log(`[fulfill] ${sessionId} už spracovaná`);
+    // Poukážka už odišla. Ak sa vtedy nákup do Mety neposlal (napr. zlý token), pošleme ho teraz – stačí webhook v Stripe znova odoslať (Resend).
+    if (pi.metadata.capi_purchase !== "1" && (await sendPurchase(s))) {
+      await stripe().paymentIntents.update(pi.id, { metadata: { capi_purchase: "1" } });
+      console.log(`[fulfill] ${sessionId} už spracovaná, nákup dodatočne odoslaný do Mety`);
+    } else {
+      console.log(`[fulfill] ${sessionId} už spracovaná`);
+    }
     return;
   }
 
-  const md = s.metadata ?? {};
   const product = getProduct(md.product_id ?? "");
   const qty = s.line_items?.data[0]?.quantity ?? 1;
   const amount = (s.amount_total ?? 0) / 100;
@@ -51,37 +57,7 @@ export async function fulfillCheckout(sessionId: string) {
   const invoiceLabel = invoice?.number ? `faktúra č. ${invoice.number}` : "faktúra";
 
   // 1) Conversions API: Purchase so skutočnou sumou. Rovnaké event_id posiela ďakovacia stránka.
-  const consent = md.consent === "1";
-  if (capiAllowed(consent)) {
-    await sendCapi({
-      eventName: "Purchase",
-      eventId: purchaseEventId(s.id),
-      eventTime: s.created,
-      sourceUrl: md.source_url || siteUrl,
-      user: {
-        email: customer?.email,
-        phone: customer?.phone,
-        name: customer?.name,
-        city: customer?.address?.city,
-        zip: customer?.address?.postal_code,
-        country: customer?.address?.country ?? "sk",
-        // Metadáta platby obsahujú len to, čo checkout smel uložiť (pozri capiAllowed).
-        ip: md.ip || undefined,
-        userAgent: md.ua || undefined,
-        fbp: md.fbp || undefined,
-        fbc: buildFbc(md.fbc || undefined, md.fbclid || undefined),
-      },
-      custom: {
-        currency: "EUR",
-        value: amount,
-        content_ids: [md.product_id],
-        content_name: productName,
-        content_type: "product",
-        num_items: qty,
-        order_id: s.id,
-      },
-    });
-  }
+  const capiSent = await sendPurchase(s);
 
   // 2) PDF poukážky
   const codes = Array.from({ length: qty }, (_, i) => voucherCode(s.id, i));
@@ -165,8 +141,50 @@ export async function fulfillCheckout(sessionId: string) {
   // 6) Príznak spracovania (ďalšie doručenie webhooku sa preskočí)
   if (pi) {
     await stripe().paymentIntents.update(pi.id, {
-      metadata: { fulfilled: "1", voucher_codes: codes.join(",").slice(0, 500), product_id: md.product_id ?? "" },
+      metadata: {
+        fulfilled: "1",
+        capi_purchase: capiSent ? "1" : "0",
+        voucher_codes: codes.join(",").slice(0, 500),
+        product_id: md.product_id ?? "",
+      },
     });
   }
   console.log(`[fulfill] ${sessionId} hotovo: ${codes.join(", ")}`);
+}
+
+/** Purchase do Conversions API. Vráti true, ak ho Meta prijala (false aj vtedy, keď bez súhlasu posielať nesmieme). */
+async function sendPurchase(s: Stripe.Checkout.Session): Promise<boolean> {
+  const md = s.metadata ?? {};
+  if (!capiAllowed(md.consent === "1")) return false;
+  const product = getProduct(md.product_id ?? "");
+  const qty = s.line_items?.data[0]?.quantity ?? 1;
+  const customer = s.customer_details;
+  return sendCapi({
+    eventName: "Purchase",
+    eventId: purchaseEventId(s.id),
+    eventTime: s.created,
+    sourceUrl: md.source_url || siteUrl,
+    user: {
+      email: customer?.email,
+      phone: customer?.phone,
+      name: customer?.name,
+      city: customer?.address?.city,
+      zip: customer?.address?.postal_code,
+      country: customer?.address?.country ?? "sk",
+      // Metadáta platby obsahujú len to, čo checkout smel uložiť (pozri capiAllowed).
+      ip: md.ip || undefined,
+      userAgent: md.ua || undefined,
+      fbp: md.fbp || undefined,
+      fbc: buildFbc(md.fbc || undefined, md.fbclid || undefined),
+    },
+    custom: {
+      currency: "EUR",
+      value: (s.amount_total ?? 0) / 100,
+      content_ids: [md.product_id],
+      content_name: product?.name ?? s.line_items?.data[0]?.description ?? "Darčeková poukážka",
+      content_type: "product",
+      num_items: qty,
+      order_id: s.id,
+    },
+  });
 }
